@@ -18,9 +18,13 @@ CREATE TABLE orders (
   quantity INTEGER NOT NULL,
   price DECIMAL(10,2) NOT NULL,
   status TEXT DEFAULT 'pending',
-  smm_order_id TEXT,
+  mp_payment_id TEXT,        -- ID do pagamento MercadoPago (PIX)
+  smm_order_id TEXT,         -- ID do pedido no BlackSMMRaja
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migração para bancos já existentes (rode no SQL Editor):
+-- ALTER TABLE orders ADD COLUMN IF NOT EXISTS mp_payment_id TEXT;
 
 CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

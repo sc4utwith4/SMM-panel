@@ -84,10 +84,21 @@ module.exports = async (req, res) => {
     const data = await response.json();
     if (!Array.isArray(data)) return res.status(502).json({ error: 'Erro ao buscar serviços' });
 
+    // Palavras-chave que indicam serviços muito específicos/exóticos (filtramos fora)
+    const EXCLUDE_KEYWORDS = [
+      'pk pontos', 'pk batalha', 'pk battle',
+      'live stream', '15 minutos', '30 minutos', '60 minutos', '90 minutos', '120 minutos', '180 minutos',
+      'impressões', 'alcance', 'visitas ao perfil',
+      'enquete', 'votos',
+    ];
+
     const filtered = data
       .filter(s => {
         const cat = (s.category || '').toLowerCase();
-        return ALLOWED_PLATFORMS.some(p => cat.includes(p));
+        const name = (s.name || '').toLowerCase();
+        if (!ALLOWED_PLATFORMS.some(p => cat.includes(p))) return false;
+        if (EXCLUDE_KEYWORDS.some(kw => name.includes(kw))) return false;
+        return true;
       })
       .map(s => {
         const translatedName = translate(s.name);

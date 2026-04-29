@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
       },
     });
 
-    // Registrar pedido
+    // Registrar pedido (mp_payment_id = ID do PIX, smm_order_id fica vazio até confirmação)
     const { data: order } = await supabase
       .from('orders')
       .insert({
@@ -92,7 +92,7 @@ module.exports = async (req, res) => {
         quantity,
         price: totalPrice,
         status: 'pending',
-        smm_order_id: String(payment.id),
+        mp_payment_id: String(payment.id),
       })
       .select()
       .single();

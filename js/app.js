@@ -65,13 +65,16 @@ function renderCategories() {
 
   grid.innerHTML = groups.map(g => {
     const minPrice = Math.min(...g.services.map(s => s.price));
+    // Mostra preço por 100 unidades para parecer mais acessível
+    const pricePer100 = (minPrice / 10);
     return `
       <button class="category-card" data-category="${g.key}">
         <span class="category-emoji">${g.emoji}</span>
         <span class="category-name">${g.label}</span>
+        <div class="category-tag">100 por R$ ${fmt(pricePer100)}</div>
         <div class="category-meta">
           <span>${g.services.length} opções</span>
-          <strong>desde R$ ${fmt(minPrice)}</strong>
+          <strong>desde R$ ${fmt(minPrice)}/1k</strong>
         </div>
       </button>
     `;
@@ -91,15 +94,24 @@ function openCategory(catKey) {
 
   document.getElementById('categoryTitle').textContent = `${group.emoji} ${group.label}`;
   const tbody = document.getElementById('servicesTableBody');
-  tbody.innerHTML = group.services.map(s => `
-    <tr>
-      <td class="service-row-name">${s.name}</td>
-      <td class="service-row-price">R$ ${fmt(s.price)}</td>
-      <td class="service-row-num">${fmtNum(s.min)}</td>
-      <td class="service-row-num col-max">${fmtNum(s.max)}</td>
-      <td><button class="btn-order" data-id="${s.id}">Pedir</button></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = group.services.map(s => {
+    // Calcular preço para uma quantidade exemplo (a maior das opções viáveis)
+    const exemplos = [100, 500, 1000].filter(q => q >= s.min && q <= s.max);
+    const exemploQty = exemplos[0] || s.min;
+    const exemploPreco = (s.price / 1000) * exemploQty;
+    return `
+      <tr>
+        <td class="service-row-name">${s.name}</td>
+        <td class="service-row-price">
+          R$ ${fmt(s.price)}
+          <small class="price-hint">${fmtNum(exemploQty)} = R$ ${fmt(exemploPreco)}</small>
+        </td>
+        <td class="service-row-num">${fmtNum(s.min)}</td>
+        <td class="service-row-num col-max">${fmtNum(s.max)}</td>
+        <td><button class="btn-order" data-id="${s.id}">Pedir</button></td>
+      </tr>
+    `;
+  }).join('');
 
   tbody.querySelectorAll('.btn-order').forEach(btn => {
     btn.addEventListener('click', () => openOrderModal(btn.dataset.id));

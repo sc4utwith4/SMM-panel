@@ -21,14 +21,17 @@ module.exports = async (req, res) => {
   const payment = await paymentClient.get({ id: mpPaymentId });
   if (payment.status !== 'approved') return res.status(200).end();
 
-  // Buscar pedido por smm_order_id
+  // Buscar pedido pelo ID do PIX
   const { data: order } = await supabase
     .from('orders')
     .select('*')
-    .eq('smm_order_id', String(mpPaymentId))
+    .eq('mp_payment_id', String(mpPaymentId))
     .single();
 
   if (!order) return res.status(200).end();
+
+  // Idempotência: se já foi processado, ignora
+  if (order.status !== 'pending') return res.status(200).end();
 
   // Fazer pedido no fornecedor
   const smmRes = await fetch('https://blacksmmraja.com/api/v2', {
@@ -45,11 +48,12 @@ module.exports = async (req, res) => {
 
   const smmData = await smmRes.json();
 
-  // Atualizar pedido com status approved
+  // Atualizar pedido com ID do BlackSMM e novo status
   await supabase
     .from('orders')
     .update({
       status: smmData.order ? 'processing' : 'cancelled',
+      smm_order_id: smmData.order ? String(smmData.order) : null,
     })
     .eq('id', order.id);
 
