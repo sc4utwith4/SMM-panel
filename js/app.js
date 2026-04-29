@@ -1,196 +1,272 @@
-let allServices = [];
-let currentPlatform = 'all';
+// ───────────────────────────────────────────
+//  spirasocial — Frontend
+// ───────────────────────────────────────────
 
+let allServices = [];
+let currentPlatform = 'instagram';
+let selectedService = null;
+
+// ── Categorização inteligente ──
+const CATEGORY_RULES = [
+  { key: 'seguidores_br', label: 'Seguidores Brasileiros', emoji: '🇧🇷', match: (s) => /seguidor/i.test(s.name) && /brasileir/i.test(s.name) },
+  { key: 'seguidores_ww', label: 'Seguidores Mundiais', emoji: '🌍', match: (s) => /seguidor/i.test(s.name) && !/brasileir/i.test(s.name) },
+  { key: 'curtidas_br', label: 'Curtidas Brasileiras', emoji: '❤️', match: (s) => /curtida/i.test(s.name) && /brasileir/i.test(s.name) },
+  { key: 'curtidas_ww', label: 'Curtidas Mundiais', emoji: '👍', match: (s) => /curtida/i.test(s.name) && !/brasileir/i.test(s.name) },
+  { key: 'visualizacoes', label: 'Visualizações', emoji: '▶️', match: (s) => /visualiz/i.test(s.name) },
+  { key: 'comentarios', label: 'Comentários', emoji: '💬', match: (s) => /coment/i.test(s.name) },
+  { key: 'inscritos', label: 'Inscritos', emoji: '🔔', match: (s) => /inscrit/i.test(s.name) },
+  { key: 'outros', label: 'Outros Serviços', emoji: '✨', match: () => true },
+];
+
+// ── Helpers ──
 function fmt(val) {
   return parseFloat(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+function fmtNum(val) {
+  return Number(val).toLocaleString('pt-BR');
+}
+function categorize(service) {
+  for (const rule of CATEGORY_RULES) {
+    if (rule.match(service)) return rule;
+  }
+  return CATEGORY_RULES[CATEGORY_RULES.length - 1];
+}
+function filterByPlatform(services, platform) {
+  return services.filter(s => s.category.toLowerCase().includes(platform));
+}
+function groupByCategory(services) {
+  const groups = {};
+  for (const s of services) {
+    const cat = categorize(s);
+    if (!groups[cat.key]) groups[cat.key] = { ...cat, services: [] };
+    groups[cat.key].services.push(s);
+  }
+  return Object.values(groups).sort(
+    (a, b) => CATEGORY_RULES.findIndex(r => r.key === a.key) - CATEGORY_RULES.findIndex(r => r.key === b.key)
+  );
+}
 
-// ── Navigation ──
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById('section-' + item.dataset.section).classList.add('active');
+// ── Carrega serviços ──
+async function loadServices() {
+  try {
+    const res = await fetch('/api/services');
+    allServices = await res.json();
+    renderCategories();
+  } catch (err) {
+    console.error('Erro ao carregar serviços:', err);
+  }
+}
+
+// ── Renderiza grid de categorias ──
+function renderCategories() {
+  const grid = document.getElementById('categoriesGrid');
+  const filtered = filterByPlatform(allServices, currentPlatform);
+  const groups = groupByCategory(filtered);
+
+  grid.innerHTML = groups.map(g => {
+    const minPrice = Math.min(...g.services.map(s => s.price));
+    return `
+      <button class="category-card" data-category="${g.key}">
+        <span class="category-emoji">${g.emoji}</span>
+        <span class="category-name">${g.label}</span>
+        <div class="category-meta">
+          <span>${g.services.length} opções</span>
+          <strong>desde R$ ${fmt(minPrice)}</strong>
+        </div>
+      </button>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.category-card').forEach(card => {
+    card.addEventListener('click', () => openCategory(card.dataset.category));
+  });
+}
+
+// ── Abre tabela de uma categoria ──
+function openCategory(catKey) {
+  const filtered = filterByPlatform(allServices, currentPlatform);
+  const groups = groupByCategory(filtered);
+  const group = groups.find(g => g.key === catKey);
+  if (!group) return;
+
+  document.getElementById('categoryTitle').textContent = `${group.emoji} ${group.label}`;
+  const tbody = document.getElementById('servicesTableBody');
+  tbody.innerHTML = group.services.map(s => `
+    <tr>
+      <td class="service-row-name">${s.name}</td>
+      <td class="service-row-price">R$ ${fmt(s.price)}</td>
+      <td class="service-row-num">${fmtNum(s.min)}</td>
+      <td class="service-row-num col-max">${fmtNum(s.max)}</td>
+      <td><button class="btn-order" data-id="${s.id}">Pedir</button></td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('.btn-order').forEach(btn => {
+    btn.addEventListener('click', () => openOrderModal(btn.dataset.id));
+  });
+
+  document.getElementById('categoriesGrid').style.display = 'none';
+  document.getElementById('servicesSection').style.display = 'block';
+  document.querySelector('.platform-selector').style.display = 'none';
+  window.scrollTo({ top: document.getElementById('servicesSection').offsetTop - 80, behavior: 'smooth' });
+}
+
+document.getElementById('btnBack').addEventListener('click', () => {
+  document.getElementById('servicesSection').style.display = 'none';
+  document.getElementById('categoriesGrid').style.display = 'grid';
+  document.querySelector('.platform-selector').style.display = 'flex';
+});
+
+// ── Plataforma selector ──
+document.querySelectorAll('.platform-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentPlatform = tab.dataset.platform;
+    renderCategories();
   });
 });
 
-// ── Load Services ──
-async function loadServices() {
-  const res = await fetch('/api/services');
-  allServices = await res.json();
-  renderServices(currentPlatform);
+// ── Modal helpers ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(modal) { modal.classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(el => {
+  el.addEventListener('click', () => closeModal(el.closest('.modal')));
+});
+
+// ── Modal: fazer pedido ──
+function openOrderModal(serviceId) {
+  selectedService = allServices.find(s => String(s.id) === String(serviceId));
+  if (!selectedService) return;
+
+  document.getElementById('modalServiceName').textContent = selectedService.name;
+  document.getElementById('modalServicePrice').textContent = `R$ ${fmt(selectedService.price)}`;
+  document.getElementById('qtyHint').textContent = `Mínimo: ${fmtNum(selectedService.min)} • Máximo: ${fmtNum(selectedService.max)}`;
+  document.getElementById('orderQty').min = selectedService.min;
+  document.getElementById('orderQty').max = selectedService.max;
+  document.getElementById('orderQty').placeholder = `Ex: ${selectedService.min}`;
+  document.getElementById('orderQty').value = '';
+  document.getElementById('orderTotalArea').style.display = 'none';
+  document.getElementById('orderError').style.display = 'none';
+
+  openModal('orderModal');
 }
 
-function renderServices(platform) {
-  const select = document.getElementById('serviceSelect');
-  const filtered = platform === 'all'
-    ? allServices
-    : allServices.filter(s => s.category.toLowerCase().includes(platform));
-
-  const grouped = {};
-  filtered.forEach(s => {
-    if (!grouped[s.category]) grouped[s.category] = [];
-    grouped[s.category].push(s);
-  });
-
-  select.innerHTML = '<option value="">— Selecione um serviço —</option>';
-  Object.entries(grouped).forEach(([cat, services]) => {
-    const group = document.createElement('optgroup');
-    group.label = cat;
-    services.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = `${s.name} — R$ ${fmt(s.price)}/1k`;
-      opt.dataset.price = s.price;
-      opt.dataset.min = s.min;
-      opt.dataset.max = s.max;
-      opt.dataset.name = s.name;
-      group.appendChild(opt);
-    });
-    select.appendChild(group);
-  });
-}
-
-document.getElementById('serviceSelect').addEventListener('change', updateServiceInfo);
-document.getElementById('orderQty').addEventListener('input', updateTotal);
-
-function updateServiceInfo() {
-  const select = document.getElementById('serviceSelect');
-  const opt = select.options[select.selectedIndex];
-  const info = document.getElementById('serviceInfo');
-
-  if (!opt.dataset.price) {
-    info.classList.add('hidden');
-    return;
-  }
-
-  document.getElementById('infoPrice').textContent = `R$ ${fmt(opt.dataset.price)}`;
-  document.getElementById('infoMin').textContent = Number(opt.dataset.min).toLocaleString('pt-BR');
-  document.getElementById('infoMax').textContent = Number(opt.dataset.max).toLocaleString('pt-BR');
-  document.getElementById('orderQty').min = opt.dataset.min;
-  document.getElementById('orderQty').max = opt.dataset.max;
-  document.getElementById('orderQty').placeholder = `Mín: ${opt.dataset.min} | Máx: ${opt.dataset.max}`;
-  info.classList.remove('hidden');
-  updateTotal();
-}
-
-function updateTotal() {
-  const select = document.getElementById('serviceSelect');
-  const opt = select.options[select.selectedIndex];
+document.getElementById('orderQty').addEventListener('input', () => {
+  if (!selectedService) return;
   const qty = parseInt(document.getElementById('orderQty').value) || 0;
-  const totalArea = document.getElementById('orderTotal');
+  const totalArea = document.getElementById('orderTotalArea');
+  if (qty < 1) { totalArea.style.display = 'none'; return; }
+  const total = (selectedService.price / 1000) * qty;
+  document.getElementById('orderTotalValue').textContent = `R$ ${fmt(total)}`;
+  totalArea.style.display = 'flex';
+});
 
-  if (!opt.dataset.price || qty < 1) { totalArea.classList.add('hidden'); return; }
-
-  const price = parseFloat(opt.dataset.price);
-  const total = (price / 1000) * qty;
-  document.getElementById('totalValue').textContent = `R$ ${fmt(total)}`;
-  totalArea.classList.remove('hidden');
-}
-
-// ── Place Order ──
+// ── Cria pedido ──
 document.getElementById('placeOrderBtn').addEventListener('click', async () => {
   const btn = document.getElementById('placeOrderBtn');
   const err = document.getElementById('orderError');
-  const succ = document.getElementById('orderSuccess');
-  err.classList.add('hidden');
-  succ.classList.add('hidden');
+  err.style.display = 'none';
 
   const email = document.getElementById('orderEmail').value.trim();
   const name = document.getElementById('orderName').value.trim();
-  const select = document.getElementById('serviceSelect');
-  const opt = select.options[select.selectedIndex];
   const link = document.getElementById('orderLink').value.trim();
   const qty = parseInt(document.getElementById('orderQty').value);
 
   if (!email || !name) return showErr(err, 'Preencha seu e-mail e nome.');
-  if (!opt.dataset.price) return showErr(err, 'Selecione um serviço.');
   if (!link) return showErr(err, 'Informe o link do perfil ou publicação.');
-  if (!qty || qty < opt.dataset.min) return showErr(err, `Quantidade mínima: ${opt.dataset.min}`);
-  if (qty > opt.dataset.max) return showErr(err, `Quantidade máxima: ${opt.dataset.max}`);
+  if (!qty || qty < selectedService.min) return showErr(err, `Quantidade mínima: ${fmtNum(selectedService.min)}`);
+  if (qty > selectedService.max) return showErr(err, `Quantidade máxima: ${fmtNum(selectedService.max)}`);
 
   btn.disabled = true;
   btn.textContent = 'Gerando PIX...';
 
-  const price = parseFloat(opt.dataset.price);
-  const total = (price / 1000) * qty;
+  try {
+    const res = await fetch('/api/order-anon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email, name,
+        service_id: selectedService.id,
+        service_name: selectedService.name,
+        link, quantity: qty,
+        price: selectedService.price,
+      }),
+    });
+    const data = await res.json();
+    btn.disabled = false;
+    btn.textContent = 'Gerar PIX';
 
-  const res = await fetch('/api/order-anon', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email,
-      name,
-      service_id: opt.value,
-      service_name: opt.dataset.name,
-      link,
-      quantity: qty,
-      price,
-    }),
-  });
+    if (data.error) return showErr(err, data.error);
 
-  const data = await res.json();
-  btn.disabled = false;
-  btn.textContent = 'Gerar Pagamento PIX';
-
-  if (data.error) return showErr(err, data.error);
-
-  // Mostrar PIX
-  document.getElementById('pixQR').src = `data:image/png;base64,${data.pix_qr_base64}`;
-  document.getElementById('pixCode').value = data.pix_code;
-  document.getElementById('orderIdDisplay').textContent = data.order_id.slice(0, 8).toUpperCase();
-  document.getElementById('pixArea').classList.remove('hidden');
+    document.getElementById('pixQR').src = `data:image/png;base64,${data.pix_qr_base64}`;
+    document.getElementById('pixCode').value = data.pix_code;
+    document.getElementById('orderIdDisplay').textContent = data.order_id.slice(0, 8).toUpperCase();
+    closeModal(document.getElementById('orderModal'));
+    openModal('pixModal');
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Gerar PIX';
+    showErr(err, 'Erro ao gerar pagamento. Tente novamente.');
+  }
 });
 
 document.getElementById('copyPixBtn').addEventListener('click', () => {
-  const code = document.getElementById('pixCode').value;
-  navigator.clipboard.writeText(code);
+  navigator.clipboard.writeText(document.getElementById('pixCode').value);
   const btn = document.getElementById('copyPixBtn');
   btn.textContent = 'Copiado!';
   setTimeout(() => btn.textContent = 'Copiar', 2000);
 });
 
-// ── Track Order ──
+// ── Rastrear pedido ──
+document.getElementById('navTrack').addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('trackResult').style.display = 'none';
+  document.getElementById('trackError').style.display = 'none';
+  openModal('trackModal');
+});
+
 document.getElementById('trackBtn').addEventListener('click', async () => {
   const btn = document.getElementById('trackBtn');
   const err = document.getElementById('trackError');
   const result = document.getElementById('trackResult');
-  err.classList.add('hidden');
+  err.style.display = 'none';
   result.style.display = 'none';
 
   const email = document.getElementById('trackEmail').value.trim();
   const orderId = document.getElementById('trackOrderId').value.trim();
-
   if (!email || !orderId) return showErr(err, 'Preencha o e-mail e ID do pedido.');
 
   btn.disabled = true;
   btn.textContent = 'Buscando...';
 
-  const res = await fetch(`/api/order-anon?email=${encodeURIComponent(email)}&order_id=${encodeURIComponent(orderId)}`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`/api/order-anon?email=${encodeURIComponent(email)}&order_id=${encodeURIComponent(orderId)}`);
+    const data = await res.json();
+    btn.disabled = false;
+    btn.textContent = 'Buscar';
 
-  btn.disabled = false;
-  btn.textContent = 'Buscar Pedido';
+    if (data.error) return showErr(err, data.error);
 
-  if (data.error) return showErr(err, data.error);
-
-  document.getElementById('resultEmail').textContent = data.email;
-  document.getElementById('resultService').textContent = data.service_name;
-  document.getElementById('resultLink').textContent = data.link;
-  document.getElementById('resultQty').textContent = Number(data.quantity).toLocaleString('pt-BR');
-  document.getElementById('resultPrice').textContent = fmt(data.price);
-  document.getElementById('resultStatus').textContent = statusLabel(data.status);
-  document.getElementById('resultStatus').className = `badge badge-${data.status}`;
-  document.getElementById('resultDate').textContent = formatDate(data.created_at);
-
-  result.style.display = 'block';
+    document.getElementById('resultService').textContent = data.service_name;
+    document.getElementById('resultQty').textContent = fmtNum(data.quantity);
+    document.getElementById('resultPrice').textContent = fmt(data.price);
+    const status = document.getElementById('resultStatus');
+    status.textContent = statusLabel(data.status);
+    status.className = `badge badge-${data.status}`;
+    document.getElementById('resultDate').textContent = formatDate(data.created_at);
+    result.style.display = 'block';
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Buscar';
+    showErr(err, 'Erro ao buscar pedido.');
+  }
 });
 
-function showErr(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+// ── Helpers ──
+function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
 function formatDate(iso) {
-  return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 function statusLabel(s) {
   return { pending: 'Pendente', processing: 'Processando', completed: 'Concluído', cancelled: 'Cancelado' }[s] || s;

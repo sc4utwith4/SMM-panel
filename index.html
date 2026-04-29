@@ -3,138 +3,175 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>spirasocial — Impulsione suas Redes</title>
+  <title>spirasocial — Impulsione suas Redes Sociais</title>
   <link rel="stylesheet" href="/css/style.css" />
 </head>
-<body class="dashboard-page">
+<body>
 
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <span>⚡</span>
-      <span>spirasocial</span>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark"></span>
+        <span class="logo-text">spirasocial</span>
+      </a>
+      <nav class="header-nav">
+        <a href="#catalog" class="nav-link">Serviços</a>
+        <a href="#" class="nav-link" id="navTrack">Rastrear pedido</a>
+      </nav>
     </div>
-    <nav class="sidebar-nav">
-      <a href="#" class="nav-item active" data-section="order">
-        <span class="nav-icon">🛒</span> Fazer Pedido
-      </a>
-      <a href="#" class="nav-item" data-section="track">
-        <span class="nav-icon">📍</span> Rastrear Pedido
-      </a>
-    </nav>
-  </aside>
+  </header>
 
-  <main class="main-content">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero-title">Impulsione suas redes <span class="accent">em minutos</span></h1>
+      <p class="hero-subtitle">Seguidores, curtidas e visualizações de qualidade para Instagram e TikTok. Entrega rápida e segura.</p>
+    </div>
+  </section>
 
-    <!-- FAZER PEDIDO -->
-    <section id="section-order" class="section active">
-      <div class="section-header">
-        <h2>Impulsione suas Redes Sociais</h2>
-        <p style="color: var(--text-muted); margin-top: 0.5rem;">Ganhe seguidores e curtidas em minutos</p>
-      </div>
+  <!-- PLATAFORMA SELECTOR -->
+  <section class="platform-selector container" id="catalog">
+    <button class="platform-tab active" data-platform="instagram">
+      <span class="platform-icon">📷</span>
+      <span>Instagram</span>
+    </button>
+    <button class="platform-tab" data-platform="tiktok">
+      <span class="platform-icon">🎵</span>
+      <span>TikTok</span>
+    </button>
+  </section>
 
-      <div class="order-form-card">
-        <div class="form-group">
-          <label>Seu E-mail</label>
-          <input type="email" id="orderEmail" placeholder="seu@email.com" required />
-        </div>
-        <div class="form-group">
-          <label>Seu Nome</label>
-          <input type="text" id="orderName" placeholder="Seu nome" required />
-        </div>
+  <!-- CATEGORIAS -->
+  <section class="container">
+    <div class="categories-grid" id="categoriesGrid">
+      <!-- Categorias serão geradas dinamicamente -->
+    </div>
+  </section>
 
-        <div class="form-group">
-          <label>Selecione o serviço</label>
-          <select id="serviceSelect">
-            <option value="">Carregando serviços...</option>
-          </select>
-        </div>
+  <!-- TABELA DE SERVIÇOS -->
+  <section class="container services-section" id="servicesSection" style="display: none;">
+    <div class="services-header">
+      <button class="btn-back" id="btnBack">← Voltar às categorias</button>
+      <h2 id="categoryTitle">Serviços</h2>
+    </div>
 
-        <div id="serviceInfo" class="service-info hidden">
-          <div class="info-row">
-            <span>Preço por 1.000:</span>
-            <strong id="infoPrice">—</strong>
-          </div>
-          <div class="info-row">
-            <span>Mínimo:</span>
-            <strong id="infoMin">—</strong>
-          </div>
-          <div class="info-row">
-            <span>Máximo:</span>
-            <strong id="infoMax">—</strong>
-          </div>
-        </div>
+    <div class="services-table-wrap">
+      <table class="services-table">
+        <thead>
+          <tr>
+            <th>Serviço</th>
+            <th class="th-price">Preço /1k</th>
+            <th class="th-min">Mínimo</th>
+            <th class="th-max">Máximo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="servicesTableBody"></tbody>
+      </table>
+    </div>
+  </section>
 
-        <div class="form-group">
-          <label>Link do perfil / publicação</label>
-          <input type="url" id="orderLink" placeholder="https://instagram.com/seuperfil" />
-        </div>
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2026 spirasocial — Impulsione suas redes</p>
+    </div>
+  </footer>
 
-        <div class="form-group">
-          <label>Quantidade</label>
-          <input type="number" id="orderQty" placeholder="Ex: 1000" min="1" />
-        </div>
+  <!-- MODAL: FAZER PEDIDO -->
+  <div class="modal" id="orderModal">
+    <div class="modal-overlay" data-close></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close>×</button>
+      <h3 class="modal-title">Fazer Pedido</h3>
 
-        <div id="orderTotal" class="order-total hidden">
-          Total: <strong id="totalValue">R$ 0,00</strong>
-        </div>
-
-        <div id="orderError" class="form-error hidden"></div>
-        <div id="orderSuccess" class="form-success hidden"></div>
-
-        <button class="btn-primary" id="placeOrderBtn">Gerar Pagamento PIX</button>
-
-        <!-- PIX AREA -->
-        <div id="pixArea" class="pix-area hidden">
-          <p class="pix-instructions">Escaneie o QR Code ou copie o código abaixo:</p>
-          <img id="pixQR" src="" alt="QR Code PIX" class="pix-qr" />
-          <div class="pix-code-wrapper">
-            <input type="text" id="pixCode" readonly />
-            <button class="btn-copy" id="copyPixBtn">Copiar</button>
-          </div>
-          <p class="pix-note">⏳ Após o pagamento, seu pedido será processado em até 5 minutos.</p>
-          <div id="trackingInfo" style="margin-top: 1rem; padding: 1rem; background: var(--bg3); border-radius: 8px;">
-            <p style="color: var(--text-muted); font-size: 0.85rem;">📍 ID do Pedido:</p>
-            <p id="orderIdDisplay" style="font-weight: 600; font-size: 1.1rem; color: var(--accent-light);"></p>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">Use este ID para rastrear seu pedido.</p>
-          </div>
+      <div class="modal-service-info">
+        <p class="service-selected-name" id="modalServiceName">—</p>
+        <div class="service-selected-meta">
+          <span>Preço por 1.000: <strong id="modalServicePrice">—</strong></span>
         </div>
       </div>
-    </section>
 
-    <!-- RASTREAR PEDIDO -->
-    <section id="section-track" class="section">
-      <div class="section-header">
-        <h2>Rastrear Pedido</h2>
+      <div class="form-group">
+        <label>Seu E-mail</label>
+        <input type="email" id="orderEmail" placeholder="seu@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Seu Nome</label>
+        <input type="text" id="orderName" placeholder="Seu nome" />
+      </div>
+      <div class="form-group">
+        <label>Link do perfil / publicação</label>
+        <input type="url" id="orderLink" placeholder="https://instagram.com/seuperfil" />
+      </div>
+      <div class="form-group">
+        <label>Quantidade</label>
+        <input type="number" id="orderQty" placeholder="Ex: 1000" />
+        <small id="qtyHint" class="form-hint">—</small>
       </div>
 
-      <div class="order-form-card" style="max-width: 400px;">
-        <div class="form-group">
-          <label>E-mail do Pedido</label>
-          <input type="email" id="trackEmail" placeholder="seu@email.com" />
-        </div>
-        <div class="form-group">
-          <label>ID do Pedido</label>
-          <input type="text" id="trackOrderId" placeholder="ID fornecido no pagamento" />
-        </div>
-        <div id="trackError" class="form-error hidden"></div>
-        <button class="btn-primary" id="trackBtn">Buscar Pedido</button>
+      <div class="order-total" id="orderTotalArea" style="display: none;">
+        <span>Total a pagar:</span>
+        <strong id="orderTotalValue">R$ 0,00</strong>
       </div>
 
-      <div id="trackResult" class="order-form-card" style="display: none; margin-top: 2rem;">
-        <h3>Status do Pedido</h3>
-        <div style="margin-top: 1rem;">
-          <p><strong>Email:</strong> <span id="resultEmail"></span></p>
-          <p><strong>Serviço:</strong> <span id="resultService"></span></p>
-          <p><strong>Link:</strong> <span id="resultLink"></span></p>
-          <p><strong>Quantidade:</strong> <span id="resultQty"></span></p>
-          <p><strong>Valor:</strong> R$ <span id="resultPrice"></span></p>
-          <p><strong>Status:</strong> <span id="resultStatus" class="badge"></span></p>
-          <p><strong>Data:</strong> <span id="resultDate"></span></p>
-        </div>
-      </div>
-    </section>
+      <div class="form-error" id="orderError" style="display: none;"></div>
+      <button class="btn-primary btn-block" id="placeOrderBtn">Gerar PIX</button>
+    </div>
+  </div>
 
-  </main>
+  <!-- MODAL: PIX GERADO -->
+  <div class="modal" id="pixModal">
+    <div class="modal-overlay" data-close></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close>×</button>
+      <h3 class="modal-title">PIX Gerado ✓</h3>
+      <p class="modal-subtitle">Pague para iniciar seu pedido</p>
+
+      <div class="pix-content">
+        <img id="pixQR" src="" alt="QR Code PIX" class="pix-qr" />
+        <div class="pix-code-wrap">
+          <input type="text" id="pixCode" readonly />
+          <button class="btn-copy" id="copyPixBtn">Copiar</button>
+        </div>
+        <div class="order-id-box">
+          <small>ID do seu pedido:</small>
+          <strong id="orderIdDisplay">—</strong>
+        </div>
+        <p class="pix-note">Após o pagamento, seu pedido inicia em até 5 minutos.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RASTREAR PEDIDO -->
+  <div class="modal" id="trackModal">
+    <div class="modal-overlay" data-close></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close>×</button>
+      <h3 class="modal-title">Rastrear Pedido</h3>
+
+      <div class="form-group">
+        <label>E-mail do pedido</label>
+        <input type="email" id="trackEmail" placeholder="seu@email.com" />
+      </div>
+      <div class="form-group">
+        <label>ID do pedido</label>
+        <input type="text" id="trackOrderId" placeholder="ID fornecido na hora do pagamento" />
+      </div>
+      <div class="form-error" id="trackError" style="display: none;"></div>
+      <button class="btn-primary btn-block" id="trackBtn">Buscar</button>
+
+      <div class="track-result" id="trackResult" style="display: none;">
+        <hr style="margin: 1.5rem 0; border-color: var(--border)" />
+        <div class="track-row"><span>Serviço:</span><strong id="resultService">—</strong></div>
+        <div class="track-row"><span>Quantidade:</span><strong id="resultQty">—</strong></div>
+        <div class="track-row"><span>Valor:</span><strong>R$ <span id="resultPrice">—</span></strong></div>
+        <div class="track-row"><span>Status:</span><span class="badge" id="resultStatus">—</span></div>
+        <div class="track-row"><span>Data:</span><strong id="resultDate">—</strong></div>
+      </div>
+    </div>
+  </div>
 
   <script src="/js/app.js"></script>
 </body>
