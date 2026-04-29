@@ -2,14 +2,14 @@ const ALLOWED_PLATFORMS = ['instagram', 'tiktok'];
 
 // Markup multiplicador (preço_final = custo * markup)
 const MARKUP = {
-  visualiz: 5.0,         // 5x = +400% lucro (preços baixos, % alto)
-  curtidas: 4.0,         // 4x = +300% lucro
-  seguidores_br: 2.2,    // 2.2x = +120% lucro (preço já alto)
-  seguidores: 3.0,       // 3x = +200% lucro
-  default: 3.5,          // 3.5x = +250% lucro
+  visualiz: 9.0,         // 9x = +800% lucro
+  curtidas: 8.0,         // 8x = +700% lucro
+  seguidores_br: 5.0,    // 5x = +400% lucro
+  seguidores: 7.0,       // 7x = +600% lucro
+  default: 8.0,          // 8x = +700% lucro
 };
 
-const PRECO_MINIMO = 0.50; // mínimo de R$ 0,50 por 1k
+const PRECO_MINIMO = 1.50; // mínimo de R$ 1,50 por 1k
 
 const TRANSLATIONS = [
   [/video\s*views?/gi, 'Visualizações de Vídeo'],
