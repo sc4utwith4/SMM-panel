@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel SMM — Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="dashboard-page">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span>⚡</span>
+      <span>SMM Panel</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="services">
+        <span class="nav-icon">🛒</span> Serviços
+      </a>
+      <a href="#" class="nav-item" data-section="orders">
+        <span class="nav-icon">📋</span> Meus Pedidos
+      </a>
+      <a href="#" class="nav-item" data-section="wallet">
+        <span class="nav-icon">💰</span> Carteira
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <span class="user-name" id="sidebarName">—</span>
+        <span class="user-balance">R$ <span id="sidebarBalance">0,00</span></span>
+      </div>
+      <button class="btn-logout" id="logoutBtn">Sair</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- SERVIÇOS -->
+    <section id="section-services" class="section active">
+      <div class="section-header">
+        <h2>Fazer Pedido</h2>
+        <div class="platform-filter">
+          <button class="filter-btn active" data-platform="all">Todos</button>
+          <button class="filter-btn" data-platform="instagram">Instagram</button>
+          <button class="filter-btn" data-platform="tiktok">TikTok</button>
+        </div>
+      </div>
+
+      <div class="order-form-card">
+        <div class="form-group">
+          <label>Selecione o serviço</label>
+          <select id="serviceSelect">
+            <option value="">Carregando serviços...</option>
+          </select>
+        </div>
+        <div id="serviceInfo" class="service-info hidden">
+          <div class="info-row">
+            <span>Preço por 1.000:</span>
+            <strong id="infoPrice">—</strong>
+          </div>
+          <div class="info-row">
+            <span>Mínimo:</span>
+            <strong id="infoMin">—</strong>
+          </div>
+          <div class="info-row">
+            <span>Máximo:</span>
+            <strong id="infoMax">—</strong>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Link do perfil / publicação</label>
+          <input type="url" id="orderLink" placeholder="https://instagram.com/seuperfil" />
+        </div>
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input type="number" id="orderQty" placeholder="Ex: 1000" min="1" />
+        </div>
+        <div id="orderTotal" class="order-total hidden">
+          Total: <strong id="totalValue">R$ 0,00</strong>
+          <span id="balanceWarning" class="balance-warn hidden"> — Saldo insuficiente</span>
+        </div>
+        <div id="orderError" class="form-error hidden"></div>
+        <div id="orderSuccess" class="form-success hidden"></div>
+        <button class="btn-primary" id="placeOrderBtn">Fazer Pedido</button>
+      </div>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section id="section-orders" class="section">
+      <div class="section-header">
+        <h2>Meus Pedidos</h2>
+        <button class="btn-outline" id="refreshOrdersBtn">Atualizar</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Serviço</th>
+              <th>Link</th>
+              <th>Qtd</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr><td colspan="7" class="table-empty">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CARTEIRA -->
+    <section id="section-wallet" class="section">
+      <div class="section-header">
+        <h2>Carteira</h2>
+      </div>
+      <div class="wallet-grid">
+        <div class="wallet-card">
+          <span class="wallet-label">Saldo disponível</span>
+          <span class="wallet-amount">R$ <span id="walletBalance">0,00</span></span>
+        </div>
+        <div class="deposit-card">
+          <h3>Adicionar saldo via PIX</h3>
+          <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="depositAmount" placeholder="Ex: 20" min="1" step="0.01" />
+          </div>
+          <div id="depositError" class="form-error hidden"></div>
+          <button class="btn-primary" id="depositBtn">Gerar PIX</button>
+
+          <div id="pixArea" class="pix-area hidden">
+            <p class="pix-instructions">Escaneie o QR Code ou copie o código abaixo:</p>
+            <img id="pixQR" src="" alt="QR Code PIX" class="pix-qr" />
+            <div class="pix-code-wrapper">
+              <input type="text" id="pixCode" readonly />
+              <button class="btn-copy" id="copyPixBtn">Copiar</button>
+            </div>
+            <p class="pix-note">⏳ Após o pagamento, seu saldo será creditado automaticamente em até 1 minuto.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:2rem">
+        <h3>Histórico de transações</h3>
+      </div>
+      <div class="table-wrapper">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="txTableBody">
+            <tr><td colspan="5" class="table-empty">Nenhuma transação ainda.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
