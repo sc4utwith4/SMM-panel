@@ -1,12 +1,15 @@
 const ALLOWED_PLATFORMS = ['instagram', 'tiktok'];
 
+// Markup multiplicador (preço_final = custo * markup)
 const MARKUP = {
-  visualiz: 1.15,
-  curtidas: 0.95,
-  seguidores_br: 0.77,
-  seguidores: 0.82,
-  default: 0.80,
+  visualiz: 5.0,         // 5x = +400% lucro (preços baixos, % alto)
+  curtidas: 4.0,         // 4x = +300% lucro
+  seguidores_br: 2.2,    // 2.2x = +120% lucro (preço já alto)
+  seguidores: 3.0,       // 3x = +200% lucro
+  default: 3.5,          // 3.5x = +250% lucro
 };
+
+const PRECO_MINIMO = 0.50; // mínimo de R$ 0,50 por 1k
 
 const TRANSLATIONS = [
   [/video\s*views?/gi, 'Visualizações de Vídeo'],
@@ -41,10 +44,27 @@ function getMarkup(translatedName) {
   return MARKUP.default;
 }
 
-function applyMarkup(rate, markupFactor) {
+function applyMarkup(rate, markupMultiplier) {
   const cost = parseFloat(rate);
-  const price = cost * (1 + markupFactor);
-  return Math.ceil(price * 100) / 100;
+  let price = cost * markupMultiplier;
+
+  // Garante preço mínimo
+  if (price < PRECO_MINIMO) price = PRECO_MINIMO;
+
+  // Arredonda preços "bonitos" — sempre para cima, em décimos de centavo
+  // Ex: 1,07 → 1,10 | 12,34 → 12,40 | 0,42 → 0,50
+  if (price < 1) {
+    // Preços baixos: arredonda para 10 centavos pra cima
+    price = Math.ceil(price * 10) / 10;
+  } else if (price < 10) {
+    // Preços médios: arredonda para 10 centavos pra cima
+    price = Math.ceil(price * 10) / 10;
+  } else {
+    // Preços altos: arredonda para inteiro pra cima e termina em ,90
+    price = Math.floor(price) + 0.90;
+  }
+
+  return Number(price.toFixed(2));
 }
 
 module.exports = async (req, res) => {
