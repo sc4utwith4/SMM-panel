@@ -233,42 +233,82 @@ document.getElementById('copyPixBtn').addEventListener('click', () => {
 });
 
 // ── Polling: verifica confirmação do pagamento ──
+// IMPORTANTE: navegadores mobile pausam setInterval quando o usuário
+// sai do app (ex: pra pagar no app do banco). Por isso usamos
+// Page Visibility API + focus events pra fazer check imediato ao voltar.
 let pollingInterval = null;
-let pollingEmail = null;
-let pollingOrderId = null;
+let pollingCleanup = null;
+let pollingActive = false;
+let pollingContext = null; // { email, orderId, service, qty, total }
+let pollingAttempts = 0;
+const POLL_MAX_ATTEMPTS = 120; // 10 minutos (120 x 5s)
+
+async function checkOrderStatus() {
+  if (!pollingActive || !pollingContext) return false;
+  const { email, orderId, service, qty, total } = pollingContext;
+
+  try {
+    const res = await fetch(`/api/order-anon?email=${encodeURIComponent(email)}&order_id=${encodeURIComponent(orderId)}`, {
+      cache: 'no-store',
+    });
+    const data = await res.json();
+
+    if (data && (data.status === 'processing' || data.status === 'completed')) {
+      stopPolling();
+      closeModal(document.getElementById('pixModal'));
+
+      document.getElementById('confirmedDetails').innerHTML = `
+        <span>📦 Serviço: <strong>${service}</strong></span>
+        <span>🔢 Quantidade: <strong>${fmtNum(qty)}</strong></span>
+        <span>💰 Total pago: <strong>R$ ${fmt(total)}</strong></span>
+        <span>🆔 ID do pedido: <strong style="font-family:monospace">${orderId.slice(0,8).toUpperCase()}</strong></span>
+      `;
+      openModal('confirmedModal');
+      return true;
+    }
+  } catch (_) {}
+  return false;
+}
 
 function startPolling(email, orderId, service, qty, total) {
-  pollingEmail = email;
-  pollingOrderId = orderId;
-  let attempts = 0;
-  const MAX_ATTEMPTS = 36; // 3 minutos (36 x 5s)
+  stopPolling(); // Limpa qualquer polling anterior
+  pollingContext = { email, orderId, service, qty, total };
+  pollingActive = true;
+  pollingAttempts = 0;
 
+  // Loop principal
   pollingInterval = setInterval(async () => {
-    attempts++;
-    if (attempts > MAX_ATTEMPTS) { stopPolling(); return; }
-
-    try {
-      const res = await fetch(`/api/order-anon?email=${encodeURIComponent(email)}&order_id=${encodeURIComponent(orderId)}`);
-      const data = await res.json();
-
-      if (data.status === 'processing' || data.status === 'completed') {
-        stopPolling();
-        closeModal(document.getElementById('pixModal'));
-
-        document.getElementById('confirmedDetails').innerHTML = `
-          <span>📦 Serviço: <strong>${service}</strong></span>
-          <span>🔢 Quantidade: <strong>${fmtNum(qty)}</strong></span>
-          <span>💰 Total pago: <strong>R$ ${fmt(total)}</strong></span>
-          <span>🆔 ID do pedido: <strong style="font-family:monospace">${orderId.slice(0,8).toUpperCase()}</strong></span>
-        `;
-        openModal('confirmedModal');
-      }
-    } catch (_) {}
+    pollingAttempts++;
+    if (pollingAttempts > POLL_MAX_ATTEMPTS) { stopPolling(); return; }
+    await checkOrderStatus();
   }, 5000);
+
+  // Mobile fix: quando aba volta a ficar visível ou ganha foco,
+  // fazer check imediato (caso o setInterval tenha sido pausado)
+  const onVisible = () => {
+    if (document.visibilityState === 'visible' && pollingActive) {
+      checkOrderStatus();
+    }
+  };
+  const onFocus = () => { if (pollingActive) checkOrderStatus(); };
+  const onPageShow = () => { if (pollingActive) checkOrderStatus(); };
+
+  document.addEventListener('visibilitychange', onVisible);
+  window.addEventListener('focus', onFocus);
+  window.addEventListener('pageshow', onPageShow);
+
+  pollingCleanup = () => {
+    document.removeEventListener('visibilitychange', onVisible);
+    window.removeEventListener('focus', onFocus);
+    window.removeEventListener('pageshow', onPageShow);
+  };
 }
 
 function stopPolling() {
+  pollingActive = false;
+  pollingContext = null;
   if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+  if (pollingCleanup) { pollingCleanup(); pollingCleanup = null; }
 }
 
 // ── Rastrear pedido ──
