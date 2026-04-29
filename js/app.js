@@ -92,7 +92,7 @@ function openCategory(catKey) {
   const group = groups.find(g => g.key === catKey);
   if (!group) return;
 
-  document.getElementById('categoryTitle').textContent = `${group.emoji} ${group.label}`;
+  document.getElementById('categoryTitle').innerHTML = `${group.emoji} ${group.label}`;
   const tbody = document.getElementById('servicesTableBody');
   tbody.innerHTML = group.services.map(s => {
     // Calcular preço para uma quantidade exemplo (a maior das opções viáveis)
@@ -216,6 +216,8 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
     document.getElementById('orderIdDisplay').textContent = data.order_id.slice(0, 8).toUpperCase();
     closeModal(document.getElementById('orderModal'));
     openModal('pixModal');
+    stopPolling();
+    startPolling(email, data.order_id, selectedService.name, qty, data.amount);
   } catch (e) {
     btn.disabled = false;
     btn.textContent = 'Gerar PIX';
@@ -229,6 +231,45 @@ document.getElementById('copyPixBtn').addEventListener('click', () => {
   btn.textContent = 'Copiado!';
   setTimeout(() => btn.textContent = 'Copiar', 2000);
 });
+
+// ── Polling: verifica confirmação do pagamento ──
+let pollingInterval = null;
+let pollingEmail = null;
+let pollingOrderId = null;
+
+function startPolling(email, orderId, service, qty, total) {
+  pollingEmail = email;
+  pollingOrderId = orderId;
+  let attempts = 0;
+  const MAX_ATTEMPTS = 36; // 3 minutos (36 x 5s)
+
+  pollingInterval = setInterval(async () => {
+    attempts++;
+    if (attempts > MAX_ATTEMPTS) { stopPolling(); return; }
+
+    try {
+      const res = await fetch(`/api/order-anon?email=${encodeURIComponent(email)}&order_id=${encodeURIComponent(orderId)}`);
+      const data = await res.json();
+
+      if (data.status === 'processing' || data.status === 'completed') {
+        stopPolling();
+        closeModal(document.getElementById('pixModal'));
+
+        document.getElementById('confirmedDetails').innerHTML = `
+          <span>📦 Serviço: <strong>${service}</strong></span>
+          <span>🔢 Quantidade: <strong>${fmtNum(qty)}</strong></span>
+          <span>💰 Total pago: <strong>R$ ${fmt(total)}</strong></span>
+          <span>🆔 ID do pedido: <strong style="font-family:monospace">${orderId.slice(0,8).toUpperCase()}</strong></span>
+        `;
+        openModal('confirmedModal');
+      }
+    } catch (_) {}
+  }, 5000);
+}
+
+function stopPolling() {
+  if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+}
 
 // ── Rastrear pedido ──
 document.getElementById('navTrack').addEventListener('click', e => {

@@ -355,6 +355,22 @@ input:focus { border-color: var(--accent); }
 .order-id-box strong { color: var(--accent); font-family: 'Menlo', monospace; font-size: 0.95rem; letter-spacing: 0.05em; }
 .pix-note { font-size: 0.85rem; color: var(--text-muted); text-align: center; }
 
+/* ── Confirmação ── */
+.confirmed-card { text-align: center; }
+.confirmed-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
+.confirmed-details {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1.25rem 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: left;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.confirmed-details strong { color: var(--accent); }
+
 /* ── Track ── */
 .track-row {
   display: flex; justify-content: space-between; align-items: center;
