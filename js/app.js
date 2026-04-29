@@ -8,7 +8,7 @@ let selectedService = null;
 
 // ── Categorização inteligente ──
 const CATEGORY_RULES = [
-  { key: 'seguidores_br', label: 'Seguidores Brasileiros', emoji: '🇧🇷', match: (s) => /seguidor/i.test(s.name) && /brasileir/i.test(s.name) },
+  { key: 'seguidores_br', label: 'Seguidores Brasileiros', emoji: '<img src="/brasil.png" class="category-icon-img" alt="BR" />', match: (s) => /seguidor/i.test(s.name) && /brasileir/i.test(s.name) },
   { key: 'seguidores_ww', label: 'Seguidores Mundiais', emoji: '🌍', match: (s) => /seguidor/i.test(s.name) && !/brasileir/i.test(s.name) },
   { key: 'curtidas_br', label: 'Curtidas Brasileiras', emoji: '❤️', match: (s) => /curtida/i.test(s.name) && /brasileir/i.test(s.name) },
   { key: 'curtidas_ww', label: 'Curtidas Mundiais', emoji: '👍', match: (s) => /curtida/i.test(s.name) && !/brasileir/i.test(s.name) },

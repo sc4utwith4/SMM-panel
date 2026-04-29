@@ -94,6 +94,16 @@ button { cursor: pointer; border: none; background: none; }
   color: #001a14;
 }
 .platform-icon { font-size: 1.05rem; }
+.platform-icon-img {
+  width: 22px; height: 22px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.category-icon-img {
+  width: 1.4rem; height: 1.4rem;
+  object-fit: contain;
+  border-radius: 2px;
+}
 
 /* ── Categorias Grid ── */
 .categories-grid {
