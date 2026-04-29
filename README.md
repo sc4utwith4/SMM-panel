@@ -1,4 +1,4 @@
-# SMM Panel — Instagram & TikTok
+# spirasocial — Instagram & TikTok
 
 Painel de reseller para serviços SMM (Instagram e TikTok) com integração PIX.
 
