@@ -66,13 +66,18 @@ module.exports = async (req, res) => {
     const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
     const paymentClient = new Payment(client);
 
+    // Identificar dinamicamente o domínio atual para o Webhook não falhar
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const siteUrl = process.env.SITE_URL || `${protocol}://${host}`;
+
     const nameParts = name.trim().split(' ');
     const payment = await paymentClient.create({
       body: {
         transaction_amount: totalPrice,
         payment_method_id: 'pix',
         description: `spirasocial: ${service_name}`,
-        notification_url: `${process.env.SITE_URL}/api/webhook-anon`,
+        notification_url: `${siteUrl}/api/webhook-anon`,
         payer: {
           email,
           first_name: nameParts[0],
