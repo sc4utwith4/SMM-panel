@@ -2,11 +2,11 @@ const ALLOWED_PLATFORMS = ['instagram', 'tiktok'];
 
 // Markup multiplicador (preço_final = custo * markup)
 const MARKUP = {
-  visualiz: 5.0,         // 5x = +400% lucro
-  curtidas: 5.0,         // 5x = +400% lucro
-  seguidores_br: 5.0,    // 5x = +400% lucro
-  seguidores: 5.0,       // 5x = +400% lucro
-  default: 5.0,          // 5x = +400% lucro
+  visualiz: 4.0,         // 4x = +300% lucro
+  curtidas: 4.0,         // 4x = +300% lucro
+  seguidores_br: 4.0,    // 4x = +300% lucro
+  seguidores: 4.0,       // 4x = +300% lucro
+  default: 4.0,          // 4x = +300% lucro
 };
 
 const PRECO_MINIMO = 1.50; // mínimo de R$ 1,50 por 1k
@@ -105,7 +105,8 @@ module.exports = async (req, res) => {
         
         // Filtro: Aceita serviços premium OU qualquer serviço brasileiro
         const isPremium = PREMIUM_KEYWORDS.some(kw => name.includes(kw));
-        const isBrazilian = name.includes('brasil') || name.includes('brazil') || name.includes('br ') || name.includes(' br') || name.includes('|br|') || /\bbr\b/.test(name);
+        const isBrazilian = name.includes('brasil') || name.includes('brazil') || name.includes('br ') || name.includes(' br') || name.includes('|br|') || /\bbr\b/.test(name) ||
+                            cat.includes('brasil') || cat.includes('brazil') || /\bbr\b/.test(cat);
         
         if (!isPremium && !isBrazilian) return false;
 

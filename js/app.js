@@ -10,13 +10,13 @@ const PACKAGE_QTYS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3
 
 // ── Categorização inteligente ──
 const CATEGORY_RULES = [
-  { key: 'seguidores_br', label: 'Seguidores Brasileiros', emoji: '<img src="/brasil.png" class="category-icon-img" alt="BR" />', match: (s) => /seguidor/i.test(s.name) && /brasileir/i.test(s.name) },
-  { key: 'seguidores_ww', label: 'Seguidores Mundiais', emoji: '🌍', match: (s) => /seguidor/i.test(s.name) && !/brasileir/i.test(s.name) },
-  { key: 'curtidas_br', label: 'Curtidas Brasileiras', emoji: '❤️', match: (s) => /curtida/i.test(s.name) && /brasileir/i.test(s.name) },
-  { key: 'curtidas_ww', label: 'Curtidas Mundiais', emoji: '👍', match: (s) => /curtida/i.test(s.name) && !/brasileir/i.test(s.name) },
-  { key: 'visualizacoes', label: 'Visualizações', emoji: '▶️', match: (s) => /visualiz/i.test(s.name) },
-  { key: 'comentarios', label: 'Comentários', emoji: '💬', match: (s) => /coment/i.test(s.name) },
-  { key: 'inscritos', label: 'Inscritos', emoji: '🔔', match: (s) => /inscrit/i.test(s.name) },
+  { key: 'seguidores_br', label: 'Seguidores Brasileiros', emoji: '<img src="/brasil.png" class="category-icon-img" alt="BR" />', match: (s) => (/seguidor/i.test(s.name) || /seguidor/i.test(s.category)) && (/brasileir/i.test(s.name) || /brasileir/i.test(s.category)) },
+  { key: 'seguidores_ww', label: 'Seguidores Mundiais', emoji: '🌍', match: (s) => (/seguidor/i.test(s.name) || /seguidor/i.test(s.category)) && !(/brasileir/i.test(s.name) || /brasileir/i.test(s.category)) },
+  { key: 'curtidas_br', label: 'Curtidas Brasileiras', emoji: '❤️', match: (s) => (/curtida/i.test(s.name) || /curtida/i.test(s.category)) && (/brasileir/i.test(s.name) || /brasileir/i.test(s.category)) },
+  { key: 'curtidas_ww', label: 'Curtidas Mundiais', emoji: '👍', match: (s) => (/curtida/i.test(s.name) || /curtida/i.test(s.category)) && !(/brasileir/i.test(s.name) || /brasileir/i.test(s.category)) },
+  { key: 'visualizacoes', label: 'Visualizações', emoji: '▶️', match: (s) => /visualiz/i.test(s.name) || /visualiz/i.test(s.category) },
+  { key: 'comentarios', label: 'Comentários', emoji: '💬', match: (s) => /coment/i.test(s.name) || /coment/i.test(s.category) },
+  { key: 'inscritos', label: 'Inscritos', emoji: '🔔', match: (s) => /inscrit/i.test(s.name) || /inscrit/i.test(s.category) },
   { key: 'outros', label: 'Outros Serviços', emoji: '✨', match: () => true },
 ];
 
