@@ -121,7 +121,10 @@
       </div>
       <div class="form-group">
         <label>Link do perfil ou publicação</label>
-        <input type="url" id="orderLink" placeholder="Ex: https://instagram.com/seu_perfil ou tiktok.com/@seu_perfil" />
+        <div style="display: flex; gap: 0.4rem;">
+          <input type="url" id="orderLink" placeholder="Ex: https://instagram.com/seu_perfil ou tiktok.com/@seu_perfil" style="flex: 1;" />
+          <button id="btnPaste" class="btn-copy" style="padding: 0 1rem;" title="Colar Link">📋</button>
+        </div>
       </div>
       
       <!-- Input escondido pois a quantidade agora é fixa -->

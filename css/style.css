@@ -312,6 +312,10 @@ input[type="text"], input[type="email"], input[type="number"], input[type="url"]
   padding: 0.7rem 0.95rem;
   width: 100%;
   outline: none; transition: border-color 0.15s;
+  -webkit-appearance: none;
+  -webkit-touch-callout: default !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
 }
 input:focus { border-color: var(--accent); }
 
