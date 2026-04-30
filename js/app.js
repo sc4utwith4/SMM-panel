@@ -66,18 +66,10 @@ function renderCategories() {
   const groups = groupByCategory(filtered);
 
   grid.innerHTML = groups.map(g => {
-    const minPrice = Math.min(...g.services.map(s => s.price));
-    // Mostra preço por 100 unidades para parecer mais acessível
-    const pricePer100 = (minPrice / 10);
     return `
       <button class="category-card" data-category="${g.key}">
         <span class="category-emoji">${g.emoji}</span>
         <span class="category-name">${g.label}</span>
-        <div class="category-tag">100 por R$ ${fmt(pricePer100)}</div>
-        <div class="category-meta">
-          <span>${g.services.length} opções</span>
-          <strong>desde R$ ${fmt(minPrice)}/1k</strong>
-        </div>
       </button>
     `;
   }).join('');
@@ -104,30 +96,18 @@ function openCategory(catKey) {
     // Se o pacote for menor que o mínimo ou maior que o máximo da API, pula
     if (qty < s.min || qty > s.max) return '';
 
-    // Lógica de Marketing Sênior: Curva de Precificação Psicológica
-    let basePrice = (s.price / 1000) * qty;
-    let precoReal = basePrice;
+    // Utiliza apenas a margem de lucro original (~400%)
+    let precoReal = (s.price / 1000) * qty;
 
-    // Aumentamos drasticamente a margem nos pacotes de "teste" (100 a 400)
-    if (qty < 500) {
-      precoReal = basePrice * 1.5; // +50% de lucro extra
-    } else if (qty < 1000) {
-      precoReal = basePrice * 1.2; // +20% de lucro extra
-    } else if (qty === 1000) {
-      precoReal = basePrice * 1.0; // Ponto de ancoragem (Valor base com 5x-9x de lucro)
+    // Arredondamento suave (ex: R$ 4,99)
+    if (precoReal < 1.5) {
+      precoReal = 1.99; // Piso mínimo absoluto
     } else {
-      precoReal = basePrice * 0.9; // Leve desconto por volume (Gatilho de "compre mais por menos")
-    }
-
-    // Arredondamento Psicológico (Terminando em ,90 para parecer mais barato)
-    if (precoReal < 2.9) {
-      precoReal = 2.90; // Piso mínimo absoluto para garantir que a taxa do PIX/Gateway não devore o lucro
-    } else {
-      precoReal = Math.floor(precoReal) + 0.90;
+      precoReal = Math.floor(precoReal) + 0.99;
     }
     
-    // Desconto fake agressivo (ancoragem)
-    const descontoRatio = 1 + (Math.random() * 0.20 + 0.35); // 35% a 55% de ancoragem
+    // Desconto fake simples (ancoragem)
+    const descontoRatio = 1 + (Math.random() * 0.15 + 0.25);
     let precoDe = precoReal * descontoRatio;
     precoDe = Math.floor(precoDe) + 0.90;
     

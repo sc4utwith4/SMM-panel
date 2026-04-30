@@ -2,11 +2,11 @@ const ALLOWED_PLATFORMS = ['instagram', 'tiktok'];
 
 // Markup multiplicador (preço_final = custo * markup)
 const MARKUP = {
-  visualiz: 9.0,         // 9x = +800% lucro
-  curtidas: 8.0,         // 8x = +700% lucro
+  visualiz: 5.0,         // 5x = +400% lucro
+  curtidas: 5.0,         // 5x = +400% lucro
   seguidores_br: 5.0,    // 5x = +400% lucro
-  seguidores: 7.0,       // 7x = +600% lucro
-  default: 8.0,          // 8x = +700% lucro
+  seguidores: 5.0,       // 5x = +400% lucro
+  default: 5.0,          // 5x = +400% lucro
 };
 
 const PRECO_MINIMO = 1.50; // mínimo de R$ 1,50 por 1k
@@ -48,19 +48,13 @@ function applyMarkup(rate, markupMultiplier) {
   const cost = parseFloat(rate);
   let price = cost * markupMultiplier;
 
-  // Garante preço mínimo
   if (price < PRECO_MINIMO) price = PRECO_MINIMO;
 
-  // Arredonda preços "bonitos" — sempre para cima, em décimos de centavo
-  // Ex: 1,07 → 1,10 | 12,34 → 12,40 | 0,42 → 0,50
   if (price < 1) {
-    // Preços baixos: arredonda para 10 centavos pra cima
     price = Math.ceil(price * 10) / 10;
   } else if (price < 10) {
-    // Preços médios: arredonda para 10 centavos pra cima
     price = Math.ceil(price * 10) / 10;
   } else {
-    // Preços altos: arredonda para inteiro pra cima e termina em ,90
     price = Math.floor(price) + 0.90;
   }
 
@@ -96,9 +90,7 @@ module.exports = async (req, res) => {
     ];
 
     function cleanName(name) {
-      // Remove números e traços do início (ex: "1532 - ")
       let n = name.replace(/^\d+\s*[-|]\s*/, '');
-      // Remove as tags de especificações poluídas no final (ex: " | 🥇 AQ | ♻️ R30 | ⚡")
       n = n.replace(/\s*\|.*$/, '');
       return n.trim();
     }
@@ -107,12 +99,15 @@ module.exports = async (req, res) => {
       .filter(s => {
         const cat = (s.category || '').toLowerCase();
         const name = (s.name || '').toLowerCase();
+        
         if (!ALLOWED_PLATFORMS.some(p => cat.includes(p))) return false;
         if (EXCLUDE_KEYWORDS.some(kw => name.includes(kw))) return false;
         
-        // Filtro para apenas serviços premium/AQ
+        // Filtro: Aceita serviços premium OU qualquer serviço brasileiro
         const isPremium = PREMIUM_KEYWORDS.some(kw => name.includes(kw));
-        if (!isPremium) return false;
+        const isBrazilian = name.includes('brasil') || name.includes('brazil') || name.includes('br ') || name.includes(' br') || name.includes('|br|') || /\bbr\b/.test(name);
+        
+        if (!isPremium && !isBrazilian) return false;
 
         return true;
       })
