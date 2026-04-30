@@ -1,4 +1,4 @@
-# spirasocial — Instagram & TikTok
+# SPIRA SOCIAL — Instagram & TikTok
 
 Painel de reseller para serviços SMM (Instagram e TikTok) com integração PIX.
 

@@ -1,8 +1,8 @@
-# spirasocial — Memória do Projeto
+# SPIRA SOCIAL — Memória do Projeto
 
 ## Visão Geral
 
-**spirasocial** é um painel de revenda (reseller) de serviços SMM (Social Media Marketing) focado em **Instagram** e **TikTok**, operando como white-label do fornecedor BlackSMMRaja.
+**SPIRA SOCIAL** é um painel de revenda (reseller) de serviços SMM (Social Media Marketing) focado em **Instagram** e **TikTok**, operando como white-label do fornecedor BlackSMMRaja.
 
 - **URL pública:** https://smm-panel-gold.vercel.app
 - **Repositório:** https://github.com/sc4utwith4/SMM-panel
@@ -17,7 +17,7 @@
 3. Sistema gera cobrança PIX via MercadoPago
 4. Após pagamento confirmado (webhook), o backend faz o pedido na API do BlackSMMRaja
 5. Frontend exibe tela de "Pagamento Confirmado" via polling
-6. Lucro = preço cobrado pelo spirasocial − custo no BlackSMMRaja
+6. Lucro = preço cobrado pelo SPIRA SOCIAL − custo no BlackSMMRaja
 
 **Sem login**: o cliente apenas informa email/nome no momento do pedido. Para rastrear, usa email + ID do pedido.
 

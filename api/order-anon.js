@@ -76,7 +76,7 @@ module.exports = async (req, res) => {
       body: {
         transaction_amount: totalPrice,
         payment_method_id: 'pix',
-        description: `spirasocial: ${service_name}`,
+        description: `SPIRA SOCIAL: ${service_name}`,
         notification_url: `${siteUrl}/api/webhook-anon`,
         payer: {
           email,
