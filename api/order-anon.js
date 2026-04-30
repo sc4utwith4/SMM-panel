@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
     // Identificar dinamicamente o domínio atual para o Webhook não falhar
     const host = req.headers['x-forwarded-host'] || req.headers.host;
     const protocol = req.headers['x-forwarded-proto'] || 'https';
-    const siteUrl = process.env.SITE_URL || `${protocol}://${host}`;
+    const siteUrl = `${protocol}://${host}`;
 
     const nameParts = name.trim().split(' ');
     const payment = await paymentClient.create({
