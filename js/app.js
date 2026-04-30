@@ -386,16 +386,24 @@ function statusLabel(s) {
 }
 
 // ── Social Proof Bar ──
-setInterval(() => {
+function updateSocialProof() {
   const el = document.getElementById('socialProofNumber');
   if (el) {
     let current = parseInt(el.innerText);
-    current += Math.floor(Math.random() * 5) - 2; // -2 a +2
-    if (current < 120) current = 120;
-    if (current > 850) current = 850;
+    // Variação orgânica: -1, 0, +1 ou +2 pessoas de forma natural
+    const change = Math.floor(Math.random() * 4) - 1; 
+    current += change;
+    
+    if (current < 110) current = 110 + Math.floor(Math.random() * 5);
+    if (current > 350) current = 350 - Math.floor(Math.random() * 5);
+    
     el.innerText = current;
   }
-}, 4500);
+  // Próxima atualização em um tempo aleatório entre 4s e 11s
+  const nextUpdateMs = Math.floor(Math.random() * 7000) + 4000;
+  setTimeout(updateSocialProof, nextUpdateMs);
+}
+setTimeout(updateSocialProof, 3500);
 
 // ── Boot ──
 loadServices();
