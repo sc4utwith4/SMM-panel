@@ -123,9 +123,8 @@ function openCategory(catKey) {
         </div>
         <div class="package-title">${group.label}</div>
         <div class="package-features">
-          <div class="package-feature"><i>⚡</i> Entrega em minutos</div>
           <div class="package-feature premium"><i>💎</i> Qualidade Premium</div>
-          <div class="package-feature"><i>✔️</i> Permanente</div>
+          <div class="package-feature"><i>⚠️</i> Entrega em: (3 minutos a 24 horas).</div>
         </div>
         <div class="package-price">
           <span class="price-de">De: R$ ${fmt(precoDe)}</span>
