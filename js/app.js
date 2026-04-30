@@ -6,6 +6,8 @@ let allServices = [];
 let currentPlatform = 'instagram';
 let selectedService = null;
 
+const PACKAGE_QTYS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000];
+
 // ── Categorização inteligente ──
 const CATEGORY_RULES = [
   { key: 'seguidores_br', label: 'Seguidores Brasileiros', emoji: '<img src="/brasil.png" class="category-icon-img" alt="BR" />', match: (s) => /seguidor/i.test(s.name) && /brasileir/i.test(s.name) },
@@ -90,31 +92,72 @@ function openCategory(catKey) {
   const filtered = filterByPlatform(allServices, currentPlatform);
   const groups = groupByCategory(filtered);
   const group = groups.find(g => g.key === catKey);
-  if (!group) return;
+  if (!group || group.services.length === 0) return;
 
   document.getElementById('categoryTitle').innerHTML = `${group.emoji} ${group.label}`;
-  const tbody = document.getElementById('servicesTableBody');
-  tbody.innerHTML = group.services.map(s => {
-    // Calcular preço para uma quantidade exemplo (a maior das opções viáveis)
-    const exemplos = [100, 500, 1000].filter(q => q >= s.min && q <= s.max);
-    const exemploQty = exemplos[0] || s.min;
-    const exemploPreco = (s.price / 1000) * exemploQty;
+  const grid = document.getElementById('packagesGrid');
+  
+  // Pegamos o serviço premium filtrado desta categoria
+  const s = group.services[0];
+  
+  grid.innerHTML = PACKAGE_QTYS.map(qty => {
+    // Se o pacote for menor que o mínimo ou maior que o máximo da API, pula
+    if (qty < s.min || qty > s.max) return '';
+
+    // Lógica de Marketing Sênior: Curva de Precificação Psicológica
+    let basePrice = (s.price / 1000) * qty;
+    let precoReal = basePrice;
+
+    // Aumentamos drasticamente a margem nos pacotes de "teste" (100 a 400)
+    if (qty < 500) {
+      precoReal = basePrice * 1.5; // +50% de lucro extra
+    } else if (qty < 1000) {
+      precoReal = basePrice * 1.2; // +20% de lucro extra
+    } else if (qty === 1000) {
+      precoReal = basePrice * 1.0; // Ponto de ancoragem (Valor base com 5x-9x de lucro)
+    } else {
+      precoReal = basePrice * 0.9; // Leve desconto por volume (Gatilho de "compre mais por menos")
+    }
+
+    // Arredondamento Psicológico (Terminando em ,90 para parecer mais barato)
+    if (precoReal < 2.9) {
+      precoReal = 2.90; // Piso mínimo absoluto para garantir que a taxa do PIX/Gateway não devore o lucro
+    } else {
+      precoReal = Math.floor(precoReal) + 0.90;
+    }
+    
+    // Desconto fake agressivo (ancoragem)
+    const descontoRatio = 1 + (Math.random() * 0.20 + 0.35); // 35% a 55% de ancoragem
+    let precoDe = precoReal * descontoRatio;
+    precoDe = Math.floor(precoDe) + 0.90;
+    
+    const descontoPercent = Math.round((1 - (precoReal / precoDe)) * 100);
+    const badgeTop = (qty === 500 || qty === 1000) ? `<div class="package-badge" style="top:-34px; background:#3b82f6; color:#fff">Mais Vendido</div>` : '';
+
     return `
-      <tr>
-        <td class="service-row-name">${s.name}</td>
-        <td class="service-row-price">
-          R$ ${fmt(s.price)}
-          <small class="price-hint">${fmtNum(exemploQty)} = R$ ${fmt(exemploPreco)}</small>
-        </td>
-        <td class="service-row-num">${fmtNum(s.min)}</td>
-        <td class="service-row-num col-max">${fmtNum(s.max)}</td>
-        <td><button class="btn-order" data-id="${s.id}">Pedir</button></td>
-      </tr>
+      <div class="package-card">
+        ${badgeTop}
+        <div class="package-badge">-${descontoPercent}%</div>
+        <div class="package-icon-qty">
+          ${group.emoji} ${fmtNum(qty)}
+        </div>
+        <div class="package-title">${group.label}</div>
+        <div class="package-features">
+          <div class="package-feature"><i>⚡</i> Entrega em minutos</div>
+          <div class="package-feature premium"><i>💎</i> Qualidade Premium</div>
+          <div class="package-feature"><i>✔️</i> Permanente</div>
+        </div>
+        <div class="package-price">
+          <span class="price-de">De: R$ ${fmt(precoDe)}</span>
+          <span class="price-por"><small>Por: R$</small> ${fmt(precoReal)}</span>
+        </div>
+        <button class="btn-package" data-id="${s.id}" data-qty="${qty}" data-price="${precoReal}">Comprar Agora</button>
+      </div>
     `;
   }).join('');
 
-  tbody.querySelectorAll('.btn-order').forEach(btn => {
-    btn.addEventListener('click', () => openOrderModal(btn.dataset.id));
+  grid.querySelectorAll('.btn-package').forEach(btn => {
+    btn.addEventListener('click', () => openOrderModal(btn.dataset.id, btn.dataset.qty, btn.dataset.price));
   });
 
   document.getElementById('categoriesGrid').style.display = 'none';
@@ -147,32 +190,22 @@ document.querySelectorAll('[data-close]').forEach(el => {
 });
 
 // ── Modal: fazer pedido ──
-function openOrderModal(serviceId) {
+function openOrderModal(serviceId, qty, priceTotal) {
   selectedService = allServices.find(s => String(s.id) === String(serviceId));
   if (!selectedService) return;
 
   document.getElementById('modalServiceName').textContent = selectedService.name;
-  document.getElementById('modalServicePrice').textContent = `R$ ${fmt(selectedService.price)}`;
-  document.getElementById('qtyHint').textContent = `Mínimo: ${fmtNum(selectedService.min)} • Máximo: ${fmtNum(selectedService.max)}`;
-  document.getElementById('orderQty').min = selectedService.min;
-  document.getElementById('orderQty').max = selectedService.max;
-  document.getElementById('orderQty').placeholder = `Ex: ${selectedService.min}`;
-  document.getElementById('orderQty').value = '';
-  document.getElementById('orderTotalArea').style.display = 'none';
+  document.getElementById('modalServiceQty').textContent = fmtNum(qty);
+  
+  document.getElementById('orderQty').value = qty;
+  
+  document.getElementById('orderTotalValue').textContent = `R$ ${fmt(priceTotal)}`;
+  document.getElementById('orderTotalArea').style.display = 'flex';
+  
   document.getElementById('orderError').style.display = 'none';
 
   openModal('orderModal');
 }
-
-document.getElementById('orderQty').addEventListener('input', () => {
-  if (!selectedService) return;
-  const qty = parseInt(document.getElementById('orderQty').value) || 0;
-  const totalArea = document.getElementById('orderTotalArea');
-  if (qty < 1) { totalArea.style.display = 'none'; return; }
-  const total = (selectedService.price / 1000) * qty;
-  document.getElementById('orderTotalValue').textContent = `R$ ${fmt(total)}`;
-  totalArea.style.display = 'flex';
-});
 
 // ── Cria pedido ──
 document.getElementById('placeOrderBtn').addEventListener('click', async () => {
@@ -187,8 +220,7 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
 
   if (!email || !name) return showErr(err, 'Preencha seu e-mail e nome.');
   if (!link) return showErr(err, 'Informe o link do perfil ou publicação.');
-  if (!qty || qty < selectedService.min) return showErr(err, `Quantidade mínima: ${fmtNum(selectedService.min)}`);
-  if (qty > selectedService.max) return showErr(err, `Quantidade máxima: ${fmtNum(selectedService.max)}`);
+  if (!qty || qty < 10) return showErr(err, 'Erro na quantidade do pacote.');
 
   btn.disabled = true;
   btn.textContent = 'Gerando PIX...';
@@ -364,6 +396,18 @@ function formatDate(iso) {
 function statusLabel(s) {
   return { pending: 'Pendente', processing: 'Processando', completed: 'Concluído', cancelled: 'Cancelado' }[s] || s;
 }
+
+// ── Social Proof Bar ──
+setInterval(() => {
+  const el = document.getElementById('socialProofNumber');
+  if (el) {
+    let current = parseInt(el.innerText);
+    current += Math.floor(Math.random() * 5) - 2; // -2 a +2
+    if (current < 120) current = 120;
+    if (current > 850) current = 850;
+    el.innerText = current;
+  }
+}, 4500);
 
 // ── Boot ──
 loadServices();

@@ -84,6 +84,9 @@ module.exports = async (req, res) => {
     const data = await response.json();
     if (!Array.isArray(data)) return res.status(502).json({ error: 'Erro ao buscar serviços' });
 
+    // Palavras-chave que indicam serviços premium (conforme Foto 3)
+    const PREMIUM_KEYWORDS = ['premium', 'aq', '🥇', '🌟', '♻️', '⚡'];
+
     // Palavras-chave que indicam serviços muito específicos/exóticos (filtramos fora)
     const EXCLUDE_KEYWORDS = [
       'pk pontos', 'pk batalha', 'pk battle',
@@ -92,16 +95,30 @@ module.exports = async (req, res) => {
       'enquete', 'votos',
     ];
 
+    function cleanName(name) {
+      // Remove números e traços do início (ex: "1532 - ")
+      let n = name.replace(/^\d+\s*[-|]\s*/, '');
+      // Remove as tags de especificações poluídas no final (ex: " | 🥇 AQ | ♻️ R30 | ⚡")
+      n = n.replace(/\s*\|.*$/, '');
+      return n.trim();
+    }
+
     const filtered = data
       .filter(s => {
         const cat = (s.category || '').toLowerCase();
         const name = (s.name || '').toLowerCase();
         if (!ALLOWED_PLATFORMS.some(p => cat.includes(p))) return false;
         if (EXCLUDE_KEYWORDS.some(kw => name.includes(kw))) return false;
+        
+        // Filtro para apenas serviços premium/AQ
+        const isPremium = PREMIUM_KEYWORDS.some(kw => name.includes(kw));
+        if (!isPremium) return false;
+
         return true;
       })
       .map(s => {
-        const translatedName = translate(s.name);
+        const cleanedName = cleanName(s.name);
+        const translatedName = translate(cleanedName);
         const translatedCategory = translate(s.category);
         const markup = getMarkup(translatedName);
         return {
@@ -112,6 +129,7 @@ module.exports = async (req, res) => {
           min: s.min,
           max: s.max,
           refill: s.refill,
+          original_name: s.name // Guardado para rastreabilidade se necessário
         };
       })
       .sort((a, b) => a.category.localeCompare(b.category));

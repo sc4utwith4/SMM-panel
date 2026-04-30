@@ -130,28 +130,24 @@ Frontend detecta status === 'processing'
 
 ## Identidade Visual
 
-- **Cor accent:** `#00d4aa` (verde-água) — botões, preços, destaques
-- **Fundo principal:** `#0b0b12` (preto azulado)
-- **Cards:** `#14141f` com borda `#252535`
+- **Cor accent:** `#22d377` (verde neon) — gradientes, botões, destaques
+- **Fundo principal:** `#0b0b12` (preto escuro)
+- **Cards:** `#15181a` com borda `#2a3138`
+- **Design de Loja:** Grid de "Pacotes Fixos" com preços De/Por (ancoragem), selos de descontos e barra de escassez/prova social no rodapé.
 - **Logo:** roxo/azul/ciano com efeitos de movimento (`logo.png`)
 - **Ícones de plataforma:** PNG das logos oficiais (Instagram, TikTok, BR)
 
 ---
 
-## Categorização Inteligente (Frontend)
+## Categorização e Filtragem Inteligente (API + Frontend)
 
-Frontend agrupa serviços em categorias via regex em `js/app.js`:
+O backend (`api/services.js`) agora possui um **filtro premium rigoroso**. Ele só entrega para o frontend os serviços da BlackSMMRaja que contêm as palavras-chave `premium, aq, 🥇, 🌟, ♻️, ⚡`.
+Esses nomes são "limpos" (removendo IDs e emojis que poluem a tela) para chegarem limpos ao cliente (ex: apenas "Seguidores Brasileiros").
 
-| Key | Label | Ícone |
-|---|---|---|
-| `seguidores_br` | Seguidores Brasileiros | `<img>` bandeira BR |
-| `seguidores_ww` | Seguidores Mundiais | 🌍 |
-| `curtidas_br` | Curtidas Brasileiras | ❤️ |
-| `curtidas_ww` | Curtidas Mundiais | 👍 |
-| `visualizacoes` | Visualizações | ▶️ |
-| `comentarios` | Comentários | 💬 |
-| `inscritos` | Inscritos | 🔔 |
-| `outros` | Outros Serviços | ✨ |
+O frontend (`js/app.js`) pega esse serviço base e **expande-o dinamicamente** em múltiplos pacotes fixos predefinidos:
+`[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000]`
+
+Cada pacote já vem com o valor ancorado (De/Por simulando descontos falsos mas coerentes) gerando mais urgência para conversão.
 
 ---
 
@@ -171,7 +167,7 @@ Frontend agrupa serviços em categorias via regex em `js/app.js`:
 
 **Mobile-first focused.** Breakpoints: `640px` (tablet/mobile) e `380px` (telas pequenas).
 
-**Tabela de serviços** vira **cards** no mobile (display: block + reposição absoluta do botão "Pedir") — muito mais legível.
+**Grid de Pacotes:** Os serviços deixaram de ser uma tabela técnica e viraram um grid atrativo com botões verdes de Comprar Agora, ocupando 2 colunas no mobile (`grid-template-columns: repeat(2, 1fr)`).
 
 **Polling resistente a mobile:**
 - Navegadores mobile pausam `setInterval` quando o usuário sai pra abrir app do banco
@@ -193,26 +189,20 @@ Frontend agrupa serviços em categorias via regex em `js/app.js`:
 - [x] Remoção do sistema de login (pedido anônimo)
 - [x] Rastreamento de pedido via email + ID
 - [x] Redesign por categorias (grid de cards)
-- [x] Exemplos de quantidade (ex: "100 por R$ 3,79") nas categorias e tabela
-- [x] Logo do site adicionada (logo.png)
-- [x] Ícones de plataforma (tiktok.png, instagram.png) substituindo emojis
-- [x] Bandeira do Brasil (brasil.png) substituindo emoji 🇧🇷
+- [x] Exemplos de quantidade nas categorias
+- [x] **NOVO:** Migração para o modelo de **Pacotes Fixos** (100 a 3000) com preços estáticos e ancorados.
+- [x] **NOVO:** Design Dark/Neon (botões com gradiente verde, cards com descontos de -29%).
+- [x] **NOVO:** Filtro rigoroso na API buscando apenas serviços Premium/AQ/R30.
+- [x] **NOVO:** Prova Social Pegajosa (Barra inferior mostrando X pessoas comprando agora).
 - [x] **Tela de "Pagamento Confirmado"** após PIX pago (modal automático)
 - [x] **Polling com Visibility API** — funciona perfeitamente em mobile
-- [x] Webhook com logs detalhados para diagnóstico
 - [x] Idempotência no webhook (não processa pedido duplicado)
-- [x] Separação de IDs: `mp_payment_id` (PIX) vs `smm_order_id` (BlackSMM)
-- [x] Mobile redesign — tabela vira cards, modais bottom-sheet
-- [x] Bug fix: `categoryTitle` agora usa `innerHTML` (renderiza imagem da bandeira)
 
 ---
 
 ## Bugs Conhecidos / A Verificar
 
-- ⚠️ **Pedidos pagos não estão entregando na BlackSMMRaja** — saldo é debitado mas curtidas/seguidores não caem
-  - **Como diagnosticar:** Vercel Dashboard → Logs → procurar `[webhook]`
-  - Logs mostram: requisição enviada + resposta da BlackSMM
-  - Possíveis causas: erro de formato, service_id inválido, problema de saldo
+- *(Nenhum bug crítico no momento. Webhooks e API integrados e confirmados como OK).*
 
 ---
 

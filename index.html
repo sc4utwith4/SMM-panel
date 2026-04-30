@@ -57,21 +57,15 @@
       <h2 id="categoryTitle">Serviços</h2>
     </div>
 
-    <div class="services-table-wrap">
-      <table class="services-table">
-        <thead>
-          <tr>
-            <th>Serviço</th>
-            <th class="th-price">Preço /1k</th>
-            <th class="th-min">Mínimo</th>
-            <th class="th-max">Máximo</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="servicesTableBody"></tbody>
-      </table>
+    <div class="packages-grid" id="packagesGrid">
+      <!-- Pacotes serão gerados aqui -->
     </div>
   </section>
+
+  <!-- BARRA INFERIOR (PROVA SOCIAL) -->
+  <div class="sticky-footer" id="socialProofBar">
+    <span class="pulse-dot"></span> <strong id="socialProofNumber">431</strong> pessoas comprando agora
+  </div>
 
   <!-- FOOTER -->
   <footer class="footer">
@@ -85,12 +79,12 @@
     <div class="modal-overlay" data-close></div>
     <div class="modal-card">
       <button class="modal-close" data-close>×</button>
-      <h3 class="modal-title">Fazer Pedido</h3>
+      <h3 class="modal-title">Finalizar Pedido</h3>
 
       <div class="modal-service-info">
         <p class="service-selected-name" id="modalServiceName">—</p>
         <div class="service-selected-meta">
-          <span>Preço por 1.000: <strong id="modalServicePrice">—</strong></span>
+          <span style="font-size:1.1rem; color:var(--text); font-weight:700">Pacote: <strong id="modalServiceQty" style="color:var(--accent)">—</strong></span>
         </div>
       </div>
 
@@ -106,11 +100,9 @@
         <label>Link do perfil / publicação</label>
         <input type="url" id="orderLink" placeholder="https://instagram.com/seuperfil" />
       </div>
-      <div class="form-group">
-        <label>Quantidade</label>
-        <input type="number" id="orderQty" placeholder="Ex: 1000" />
-        <small id="qtyHint" class="form-hint">—</small>
-      </div>
+      
+      <!-- Input escondido pois a quantidade agora é fixa -->
+      <input type="hidden" id="orderQty" />
 
       <div class="order-total" id="orderTotalArea" style="display: none;">
         <span>Total a pagar:</span>
