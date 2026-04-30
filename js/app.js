@@ -194,15 +194,6 @@ function openOrderModal(serviceId, qty, priceTotal) {
   openModal('orderModal');
 }
 
-document.getElementById('btnPaste').addEventListener('click', async (e) => {
-  e.preventDefault();
-  try {
-    const text = await navigator.clipboard.readText();
-    if (text) document.getElementById('orderLink').value = text;
-  } catch (err) {
-    // Falha silenciosa no clipboard API, o usuário usará o modo nativo.
-  }
-});
 
 // ── Cria pedido ──
 document.getElementById('placeOrderBtn').addEventListener('click', async () => {
