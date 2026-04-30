@@ -176,6 +176,14 @@ function openOrderModal(serviceId, qty, priceTotal) {
   document.getElementById('modalServiceName').textContent = selectedService.name;
   document.getElementById('modalServiceQty').textContent = fmtNum(qty);
   
+  const linkInput = document.getElementById('orderLink');
+  linkInput.value = '';
+  if (currentPlatform === 'instagram') {
+    linkInput.placeholder = 'Ex: https://instagram.com/';
+  } else {
+    linkInput.placeholder = 'Ex: https://tiktok.com/';
+  }
+
   document.getElementById('orderQty').value = qty;
   
   document.getElementById('orderTotalValue').textContent = `R$ ${fmt(priceTotal)}`;
