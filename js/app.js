@@ -5,6 +5,7 @@
 let allServices = [];
 let currentPlatform = 'instagram';
 let selectedService = null;
+let selectedTotalPrice = 0;
 
 const PACKAGE_QTYS = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000];
 
@@ -185,7 +186,7 @@ function openOrderModal(serviceId, qty, priceTotal) {
   }
 
   document.getElementById('orderQty').value = qty;
-  
+  selectedTotalPrice = parseFloat(priceTotal);
   document.getElementById('orderTotalValue').textContent = `R$ ${fmt(priceTotal)}`;
   document.getElementById('orderTotalArea').style.display = 'flex';
   
@@ -203,10 +204,12 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
 
   const email = document.getElementById('orderEmail').value.trim();
   const name = document.getElementById('orderName').value.trim();
+  const phone = document.getElementById('orderPhone').value.trim();
   const link = document.getElementById('orderLink').value.trim();
   const qty = parseInt(document.getElementById('orderQty').value);
 
   if (!email || !name) return showErr(err, 'Preencha seu e-mail e nome.');
+  if (!phone) return showErr(err, 'Informe seu telefone.');
   if (!link) return showErr(err, 'Informe o link do perfil ou publicação.');
   if (!qty || qty < 10) return showErr(err, 'Erro na quantidade do pacote.');
 
@@ -218,11 +221,11 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email, name,
+        email, name, phone,
         service_id: selectedService.id,
         service_name: selectedService.name,
         link, quantity: qty,
-        price: selectedService.price,
+        totalPrice: selectedTotalPrice,
       }),
     });
     const data = await res.json();

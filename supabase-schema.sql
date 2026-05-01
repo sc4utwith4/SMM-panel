@@ -18,7 +18,7 @@ CREATE TABLE orders (
   quantity INTEGER NOT NULL,
   price DECIMAL(10,2) NOT NULL,
   status TEXT DEFAULT 'pending',
-  mp_payment_id TEXT,        -- ID do pagamento MercadoPago (PIX)
+  mp_payment_id TEXT,        -- transactionId da SigiloPay (PIX)
   smm_order_id TEXT,         -- ID do pedido no BlackSMMRaja
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

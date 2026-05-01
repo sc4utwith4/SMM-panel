@@ -13,7 +13,8 @@ Painel de reseller para serviços SMM (Instagram e TikTok) com integração PIX.
 2. **Crie um arquivo `.env.local` com:**
    ```env
    SMM_API_KEY=sua_chave_blacksmmraja
-   MP_ACCESS_TOKEN=seu_token_mercadopago
+   SIGILO_PUBLIC_KEY=sua_chave_publica_sigilopay
+   SIGILO_SECRET_KEY=sua_chave_secreta_sigilopay
    SUPABASE_URL=https://seu-projeto.supabase.co
    SUPABASE_SERVICE_KEY=sua_service_key
    JWT_SECRET=qualquer_string_aleatoria_longa
@@ -35,12 +36,12 @@ Painel de reseller para serviços SMM (Instagram e TikTok) com integração PIX.
 
 ---
 
-## Setup MercadoPago
+## Setup SigiloPay
 
-1. Acesse [mercadopago.com.br](https://mercadopago.com.br)
-2. Vá em **Suas integrações** > **Credenciais**
-3. Copie o **Access Token** (modo produção)
-4. Cole em `.env` como `MP_ACCESS_TOKEN`
+1. Acesse [sigilopay.com.br](https://sigilopay.com.br) ou o app
+2. Vá em **Integrações** > **API**
+3. Copie a **Public Key** e **Secret Key**
+4. Cole em `.env` como `SIGILO_PUBLIC_KEY` e `SIGILO_SECRET_KEY`
 
 ---
 
@@ -67,8 +68,8 @@ Painel de reseller para serviços SMM (Instagram e TikTok) com integração PIX.
 ## Como Funciona
 
 **Cliente:**
-1. Cadastra na plataforma
-2. Adiciona saldo via PIX (MercadoPago)
+2. Faz pedido informando email, nome e link
+3. Paga via PIX (SigiloPay)
 3. Seleciona serviço (Instagram/TikTok)
 4. Faz pedido
 
@@ -102,8 +103,8 @@ painel/
 │   ├── auth.js             # Login/Register (JWT)
 │   ├── services.js         # Lista serviços + markup
 │   ├── order.js            # Cria/Lista pedidos
-│   ├── payment.js          # Gera PIX (MercadoPago)
-│   └── webhook.js          # Webhook MP (credita saldo)
+│   ├── payment.js          # (legado) Gera PIX
+│   └── webhook.js          # (legado) Webhook MP
 ├── supabase-schema.sql     # Schema do banco
 ├── vercel.json             # Config Vercel
 └── package.json
@@ -113,7 +114,7 @@ painel/
 
 ## Próximos Passos
 
-- [ ] Integração com MercadoPago (MP Access Token)
+- [x] Integração com SigiloPay (PIX)
 - [ ] Deploy na Vercel
 - [ ] Testar fluxo completo (cadastro → pedido → pagamento)
 - [ ] Adicionar dashboard admin (opcional)

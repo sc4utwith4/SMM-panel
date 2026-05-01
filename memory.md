@@ -14,7 +14,7 @@
 
 1. Cliente acessa o site, escolhe um serviço (ex: 1.000 seguidores no Instagram)
 2. Cliente preenche email, nome e link do perfil
-3. Sistema gera cobrança PIX via MercadoPago
+3. Sistema gera cobrança PIX via SigiloPay
 4. Após pagamento confirmado (webhook), o backend faz o pedido na API do BlackSMMRaja
 5. Frontend exibe tela de "Pagamento Confirmado" via polling
 6. Lucro = preço cobrado pelo SPIRA SOCIAL − custo no BlackSMMRaja
@@ -30,7 +30,7 @@
 | Frontend | HTML/CSS/JS puro (sem framework) |
 | Backend | Vercel Serverless Functions (Node.js) |
 | Banco de dados | Supabase (PostgreSQL) |
-| Pagamento | MercadoPago (PIX) |
+| Pagamento | SigiloPay (PIX) |
 | Hospedagem | Vercel |
 | Versionamento | GitHub |
 
@@ -46,7 +46,7 @@ smm-panel/
 ├── api/
 │   ├── services.js         # Lista serviços com markup aplicado
 │   ├── order-anon.js       # Cria pedido + gera PIX (POST) / rastreia pedido (GET)
-│   ├── webhook-anon.js     # Webhook MP que processa pagamento + chama BlackSMM
+│   ├── webhook-anon.js     # Webhook SigiloPay que processa pagamento + chama BlackSMM
 │   ├── order.js            # (legado) pedidos com login
 │   ├── auth.js             # (legado) login/cadastro
 │   ├── payment.js          # (legado) saldo via PIX
@@ -70,7 +70,8 @@ smm-panel/
 | `SMM_API_KEY` | Chave da API BlackSMMRaja |
 | `SUPABASE_URL` | URL do projeto Supabase |
 | `SUPABASE_SERVICE_KEY` | Service role key (backend) |
-| `MP_ACCESS_TOKEN` | Token MercadoPago (Production) |
+| `SIGILO_PUBLIC_KEY` | Chave pública SigiloPay |
+| `SIGILO_SECRET_KEY` | Chave secreta SigiloPay |
 | `JWT_SECRET` | Segredo para JWTs (legado) |
 | `SITE_URL` | `https://smm-panel-gold.vercel.app` |
 
@@ -106,13 +107,13 @@ Lógica em `api/services.js` na função `applyMarkup()`.
 ```
 Cliente → POST /api/order-anon
          → Cria/busca usuário no Supabase
-         → Cria pagamento PIX no MercadoPago
+         → Cria pagamento PIX na SigiloPay
          → Salva pedido (status: pending, mp_payment_id)
          → Retorna QR Code + ID do pedido
          → Frontend inicia polling (5s) + Visibility API
 
 Cliente paga PIX
-         → MercadoPago envia webhook → /api/webhook-anon
+         → SigiloPay envia webhook → /api/webhook-anon
          → Verifica status do pagamento (approved)
          → Busca pedido por mp_payment_id
          → Verifica idempotência (status === 'pending')
@@ -155,7 +156,7 @@ Cada pacote já vem com o valor ancorado (De/Por simulando descontos falsos mas 
 
 - **users**: `id, email, name, password_hash, balance, created_at`
 - **orders**: `id, user_id, service_id, service_name, link, quantity, price, status, mp_payment_id, smm_order_id, created_at`
-  - `mp_payment_id` = ID do pagamento no MercadoPago (PIX)
+  - `mp_payment_id` = ID do pagamento na SigiloPay (PIX) - nome da coluna mantido
   - `smm_order_id` = ID do pedido na BlackSMMRaja (após confirmação)
 - **transactions**: `user_id, amount, type, status, mp_payment_id` (legado)
 
@@ -182,7 +183,7 @@ Cada pacote já vem com o valor ancorado (De/Por simulando descontos falsos mas 
 - [x] Projeto criado e enviado pro GitHub
 - [x] Deploy na Vercel com variáveis de ambiente
 - [x] Schema do Supabase configurado
-- [x] Integração MercadoPago (PIX)
+- [x] Integração SigiloPay (PIX) (substituiu MercadoPago)
 - [x] Filtro de serviços (apenas IG e TT)
 - [x] Tradução automática para PT-BR
 - [x] Markup agressivo com arredondamento limpo
@@ -242,4 +243,4 @@ git push
 - **Repositório foi renomeado:** `smm-panel` → `SMM-panel` (URL do GitHub)
 - **Cache de serviços:** API `/api/services` tem `Cache-Control: s-maxage=300` (5 min)
 - **CRLF warnings:** o git mostra warnings sobre line endings em Windows, mas não afeta funcionamento
-- **MercadoPago em produção:** o token usado é Production (não Sandbox)
+- **SigiloPay em produção:** as chaves usadas são do ambiente de produção.
