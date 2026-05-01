@@ -46,9 +46,9 @@ module.exports = async (req, res) => {
     let orderId = null;
 
     try {
-      const { email, name, phone, service_id, service_name, link, quantity, totalPrice: rawTotal } = req.body;
+      const { email, name, phone, document, service_id, service_name, link, quantity, totalPrice: rawTotal } = req.body;
 
-      if (!email || !name || !phone || !service_id || !link || !quantity || !rawTotal)
+      if (!email || !name || !phone || !document || !service_id || !link || !quantity || !rawTotal)
         return res.status(400).json({ error: 'Dados incompletos' });
 
       const totalPrice = parseFloat(parseFloat(rawTotal).toFixed(2));
@@ -102,7 +102,7 @@ module.exports = async (req, res) => {
         body: JSON.stringify({
           identifier: order.id,
           amount: totalPrice,
-          client: { name, email, phone },
+          client: { name, email, phone, document },
           callbackUrl: `${process.env.SITE_URL}/api/webhook-anon`,
           metadata: { provider: 'spirasocial', orderId: order.id },
         }),
